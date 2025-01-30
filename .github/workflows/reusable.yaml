@@ -1,0 +1,20 @@
+on:
+  workflow_call:
+    inputs:
+      example:
+        type: string
+        required: true
+
+jobs:
+  myjob:
+    runs-on: ubuntu-latest
+    steps:
+      - name: action
+        run: |
+          if [ "${{ inputs.example }}" == "b" ]; then
+            echo "fail"
+            exit 1
+          else
+            echo "success"
+            exit 0
+          fi

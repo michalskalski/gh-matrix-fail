@@ -1,0 +1,36 @@
+name: "Test"
+
+on:
+  workflow_dispatch: # for manual run
+
+
+jobs:
+  multi:
+    strategy:
+      matrix:
+        example:
+          - a
+          - b
+          - c
+    uses: ./.github/workflows/reusable.yaml
+    secrets: inherit
+    with:
+      example: ${{ matrix.example }}
+
+  echo-result:
+    runs-on: ubuntu-latest
+    if: always()
+    needs: multi
+    steps:
+      - name: Echo result
+        run: |
+          echo "Result was: ${{ needs.multi.result }}"
+
+  notify-1:
+    runs-on: ubuntu-latest
+    needs: multi
+    if: always() && contains(needs.multi.result, 'failure')
+    steps:
+      - name: Notify about failue
+        run: |
+          echo "It failed!"

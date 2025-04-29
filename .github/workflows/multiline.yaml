@@ -1,0 +1,41 @@
+name: "multiline"
+
+on:
+  workflow_dispatch: # for manual run
+
+jobs:
+  build:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    # workaround for matrix not taking env variables
+    outputs:
+      out1: "this-is-output1"
+      out2: "this-is-output2"
+    steps:
+      - run: |
+          echo "finished"
+
+  parallel_cleanup:
+    needs: [build]
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: "Clean"
+            command: |
+              echo "delete all from ${{ needs.build.outputs.out1 }}"
+              export RES=$(echo "test-"{0..5})
+              echo "recreate $RES"
+          - name: "Clean 2"
+            command: |
+              echo "delete all from ${{ needs.build.outputs.out2 }}"
+              export RES=$(echo "test2-"{0..5})
+              echo "recreate $RES"
+    steps:
+      # Execute the specific cleanup command for this matrix job
+      - name: "${{ matrix.name }}"
+        run: ${{ matrix.command }}
